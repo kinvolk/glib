@@ -29,6 +29,16 @@
 
 G_BEGIN_DECLS
 
+typedef enum
+{
+  G_GENERIC_ERROR_FAILED
+} GGenericError;
+
+#define G_GENERIC_ERROR g_generic_error_quark()
+
+GLIB_AVAILABLE_IN_2_54
+GQuark          g_generic_error_quark      (void);
+
 /**
  * GError:
  * @domain: error domain, e.g. #G_FILE_ERROR
@@ -63,6 +73,16 @@ GError*  g_error_new_valist    (GQuark         domain,
                                 const gchar   *format,
                                 va_list        args) G_GNUC_PRINTF(3, 0);
 
+GLIB_AVAILABLE_IN_2_54
+GError*  g_error_new_generic   (const gchar   *format,
+                                ...) G_GNUC_PRINTF (1, 2);
+
+GLIB_AVAILABLE_IN_2_54
+GError*  g_error_new_generic_literal   (const gchar   *message);
+GLIB_AVAILABLE_IN_2_54
+GError*  g_error_new_generic_valist    (const gchar   *format,
+                                        va_list        args) G_GNUC_PRINTF(1, 0);
+
 GLIB_AVAILABLE_IN_ALL
 void     g_error_free          (GError        *error);
 GLIB_AVAILABLE_IN_ALL
@@ -88,6 +108,14 @@ void     g_set_error_literal   (GError       **err,
                                 GQuark         domain,
                                 gint           code,
                                 const gchar   *message);
+GLIB_AVAILABLE_IN_2_54
+void     g_set_generic_error   (GError       **err,
+                                const gchar   *format,
+                                ...) G_GNUC_PRINTF (2, 3);
+
+GLIB_AVAILABLE_IN_2_54
+void     g_set_generic_error_literal   (GError       **err,
+                                        const gchar   *message);
 
 /* if (dest) *dest = src; also has some sanity checks.
  */

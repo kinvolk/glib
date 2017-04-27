@@ -478,6 +478,82 @@ g_error_new_literal (GQuark         domain,
 }
 
 /**
+ * g_error_new_generic_valist:
+ * @format: printf()-style format for error message
+ * @args: #va_list of parameters for the message format
+ *
+ * Creates a new generic #GError with a message formatted with @format.
+ *
+ * Returns: a new generic #GError
+ *
+ * Since: 2.54
+ */
+GError*
+g_error_new_generic_valist (const gchar *format,
+                            va_list      args)
+{
+  g_return_val_if_fail (format != NULL, NULL);
+
+  return g_error_new_valist (G_GENERIC_ERROR, G_GENERIC_ERROR_FAILED, format, args);
+}
+
+/**
+ * g_error_new_generic:
+ * @format: printf()-style format for error message
+ * @...: parameters for message format
+ *
+ * Creates a new generic #GError a message formatted with @format.
+ *
+ * Returns: a new generic #GError
+ *
+ * Since: 2.54
+ */
+GError*
+g_error_new_generic (const gchar *format,
+                     ...)
+{
+  GError* error;
+  va_list args;
+
+  g_return_val_if_fail (format != NULL, NULL);
+
+  va_start (args, format);
+  error = g_error_new_generic_valist (format, args);
+  va_end (args);
+
+  return error;
+}
+
+/**
+ * g_error_new_generic_literal:
+ * @message: error message
+ *
+ * Creates a new generic #GError; unlike g_error_generic_new(), @message is
+ * not a printf()-style format string. Use this function if
+ * @message contains text you don't have control over,
+ * that could include printf() escape sequences.
+ *
+ * Returns: a new generic #GError
+ *
+ * Since: 2.54
+ **/
+GError*
+g_error_new_generic_literal (const gchar   *message)
+{
+  GError* err;
+
+  g_return_val_if_fail (message != NULL, NULL);
+
+  err = g_slice_new (GError);
+
+  err->domain = G_GENERIC_ERROR;
+  err->code = G_GENERIC_ERROR_FAILED;
+  err->message = g_strdup (message);
+
+  return err;
+}
+
+/**
  * g_error_free:
  * @error: a #GError
  *
@@ -622,6 +698,67 @@ g_set_error_literal (GError      **err,
 }
 
 /**
+ * g_set_generic_error:
+ * @err: (out callee-allocates) (optional): a return location for a generic #GError
+ * @format: printf()-style format
+ * @...: args for @format
+ *
+ * Does nothing if @err is %NULL; if @err is non-%NULL, then *@err
+ * must be %NULL. A new generic #GError is created and assigned to *@err.
+ *
+ * Since: 2.54
+ */
+void
+g_set_generic_error (GError      **err,
+                     const gchar  *format,
+                     ...)
+{
+  GError *new;
+  va_list args;
+
+  if (err == NULL)
+    return;
+
+  va_start (args, format);
+  new = g_error_new_generic_valist (format, args);
+  va_end (args);
+
+  if (*err == NULL)
+    *err = new;
+  else
+    {
+      g_warning (ERROR_OVERWRITTEN_WARNING, new->message);
+      g_error_free (new);
+    }
+}
+
+/**
+ * g_set_generic_error_literal:
+ * @err: (out callee-allocates) (optional): a return location for a generic #GError
+ * @message: error message
+ *
+ * Does nothing if @err is %NULL; if @err is non-%NULL, then *@err
+ * must be %NULL. A new generic #GError is created and assigned to *@err.
+ * Unlike g_set_generic_error(), @message is not a printf()-style format string.
+ * Use this function if @message contains text you don't have control over,
+ * that could include printf() escape sequences.
+ *
+ * Since: 2.54
+ */
+void
+g_set_generic_error_literal (GError      **err,
+                             const gchar  *message)
+{
+  if (err == NULL)
+    return;
+
+  if (*err == NULL)
+    *err = g_error_new_generic_literal (message);
+  else
+    g_warning (ERROR_OVERWRITTEN_WARNING, message);
+}
+
+/**
  * g_propagate_error:
  * @dest: (out callee-allocates) (optional) (nullable): error return location
  * @src: (transfer full): error to move into the return location
@@ -753,3 +890,19 @@ g_propagate_prefixed_error (GError      **dest,
       va_end (ap);
     }
 }
+
+/**
+ * G_GENERIC_ERROR:
+ *
+ * Error domain for generic errors. Errors in this domain will
+ * be from the #GGenericEnumeration enumeration. See #GError for
+ * information on error domains.
+ **/
+/**
+ * GGenericError:
+ * @G_GENERIC_ERROR_FAILED: Some error.
+ *
+ * Generic error codes.
+ **/
+
+G_DEFINE_QUARK (g-generic-error-quark, g_generic_error)

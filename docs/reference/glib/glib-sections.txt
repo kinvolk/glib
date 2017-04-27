@@ -486,6 +486,16 @@ g_propagate_error
 g_clear_error
 g_prefix_error
 g_propagate_prefixed_error
+
+<SUBSECTION>
+GGenericError
+G_GENERIC_ERROR
+g_error_new_generic
+g_error_new_generic_literal
+g_error_new_generic_valist
+g_set_generic_error
+g_set_generic_error_literal
+
 </SECTION>
 
 <SECTION>
